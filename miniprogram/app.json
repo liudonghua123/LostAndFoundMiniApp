@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/item-viewer/item-viewer",
     "pages/userConsole/userConsole",
     "pages/storageConsole/storageConsole",
     "pages/databaseGuide/databaseGuide",
@@ -14,5 +15,8 @@
     "navigationBarBackgroundColor": "#F6F6F6",
     "navigationBarTitleText": "云开发 QuickStart",
     "navigationBarTextStyle": "black"
+  },
+  "usingComponents": {
+    "item-list-view": "components/item-list-view/item-list-view"
   }
 }

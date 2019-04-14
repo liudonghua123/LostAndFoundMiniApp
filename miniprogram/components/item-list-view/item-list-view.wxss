@@ -1,0 +1,30 @@
+/* .itemListViewRoot {
+  width: 100%;
+} */
+
+.itemListView {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.itemListView > .preview {
+  width: 200rpx;
+  height: 200rpx;
+  margin: 30rpx 0;
+}
+
+.itemListView > .rightPart {
+  display: flex;
+  flex-direction: column;
+  margin: 0 30rpx;
+}
+
+.rightPart > .title {
+  font-size: 1.25rem;
+  margin: 30rpx 0;
+}
+
+.rightPart > .description {
+  color: gray;
+}

@@ -1,0 +1,21 @@
+.container {
+}
+
+.imageSwiper {
+  height: 100%;
+  width: 100%;
+}
+
+.imageSwiper .slide-image {
+  height: 300rpx;
+  width: 100%;
+}
+
+.container > .title {
+  font-size: 1.25rem;
+  width: 100%;
+}
+
+.container > .description {
+  width: 100%;
+}

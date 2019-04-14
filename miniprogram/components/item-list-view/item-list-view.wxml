@@ -1,0 +1,10 @@
+<view class="itemListViewRoot">
+  <view class="itemListView" wx:for="{{records}}" bindtap="itemTap" data-id="{{index}}">
+    <image class="preview" mode="aspectFit" src="{{item.pictures[0]}}" />
+    <view class="rightPart">
+      <text class="title">{{item.title}}</text>
+      <text class="description">{{item.description}}</text>
+    </view>
+  </view>
+  <slot></slot>
+</view>

@@ -1,120 +1,99 @@
 //index.js
-const app = getApp()
+const app = getApp();
 
 Page({
   data: {
-    avatarUrl: './user-unlogin.png',
-    userInfo: {},
-    logged: false,
-    takeSession: false,
-    requestResult: ''
+    records: [
+      {
+        title: '失物招领1',
+        description: '失物招领描述信息',
+        pictures: [
+          'https://6465-dev-1643b4-1259004401.tcb.qcloud.la/001-cheese.png?sign=569ee094085fb80663de8a2c2df72758&t=1555202964',
+          'https://6465-dev-1643b4-1259004401.tcb.qcloud.la/002-sunflower.png?sign=2610d615b18410e63ed4a73931c03014&t=1555202980'
+        ]
+      },
+      {
+        title: '失物招领2',
+        description: '失物招领描述信息',
+        pictures: [
+          'https://6465-dev-1643b4-1259004401.tcb.qcloud.la/003-fields.png?sign=b3b4d043859445cb8211772b61603a54&t=1555202992',
+          'https://6465-dev-1643b4-1259004401.tcb.qcloud.la/004-watering-can.png?sign=0e6669dba0e188de25ff6f0ca595b292&t=1555203008'
+        ]
+      },
+      {
+        title: '失物招领3',
+        description: '失物招领描述信息',
+        pictures: [
+          'https://6465-dev-1643b4-1259004401.tcb.qcloud.la/005-barrel-1.png?sign=63af0d48033880b45bde5b84d9b7e371&t=1555203021',
+          'https://6465-dev-1643b4-1259004401.tcb.qcloud.la/006-eggs.png?sign=b323aa3c8a23d0009688f810333b5b61&t=1555203035'
+        ]
+      }
+    ]
   },
 
   onLoad: function() {
-    if (!wx.cloud) {
-      wx.redirectTo({
-        url: '../chooseLib/chooseLib',
-      })
-      return
-    }
-
-    // 获取用户信息
-    wx.getSetting({
-      success: res => {
-        if (res.authSetting['scope.userInfo']) {
-          // 已经授权，可以直接调用 getUserInfo 获取头像昵称，不会弹框
-          wx.getUserInfo({
-            success: res => {
-              this.setData({
-                avatarUrl: res.userInfo.avatarUrl,
-                userInfo: res.userInfo
-              })
-            }
-          })
+    let getTempFileURLByFileId = (fileList, fileId) => {
+      for (let item of fileList) {
+        if (item.fileID == fileId) {
+          return item.tempFileURL;
         }
       }
-    })
-  },
-
-  onGetUserInfo: function(e) {
-    if (!this.logged && e.detail.userInfo) {
-      this.setData({
-        logged: true,
-        avatarUrl: e.detail.userInfo.avatarUrl,
-        userInfo: e.detail.userInfo
-      })
-    }
-  },
-
-  onGetOpenid: function() {
-    // 调用云函数
-    wx.cloud.callFunction({
-      name: 'login',
-      data: {},
-      success: res => {
-        console.log('[云函数] [login] user openid: ', res.result.openid)
-        app.globalData.openid = res.result.openid
-        wx.navigateTo({
-          url: '../userConsole/userConsole',
-        })
-      },
-      fail: err => {
-        console.error('[云函数] [login] 调用失败', err)
-        wx.navigateTo({
-          url: '../deployFunctions/deployFunctions',
-        })
-      }
-    })
-  },
-
-  // 上传图片
-  doUpload: function () {
-    // 选择图片
-    wx.chooseImage({
-      count: 1,
-      sizeType: ['compressed'],
-      sourceType: ['album', 'camera'],
-      success: function (res) {
-
-        wx.showLoading({
-          title: '上传中',
-        })
-
-        const filePath = res.tempFilePaths[0]
-        
-        // 上传图片
-        const cloudPath = 'my-image' + filePath.match(/\.[^.]+?$/)[0]
-        wx.cloud.uploadFile({
-          cloudPath,
-          filePath,
-          success: res => {
-            console.log('[上传文件] 成功：', res)
-
-            app.globalData.fileID = res.fileID
-            app.globalData.cloudPath = cloudPath
-            app.globalData.imagePath = filePath
-            
-            wx.navigateTo({
-              url: '../storageConsole/storageConsole'
-            })
-          },
-          fail: e => {
-            console.error('[上传文件] 失败：', e)
-            wx.showToast({
-              icon: 'none',
-              title: '上传失败',
-            })
-          },
-          complete: () => {
-            wx.hideLoading()
+      return '';
+    };
+    const db = wx.cloud.database();
+    // 查询当前用户所有的 counters
+    db.collection('data')
+      .where({})
+      .get({
+        success: res => {
+          console.log(
+            `database query successful: ${JSON.stringify(res.data, null, 2)}`
+          );
+          // 组合所有图片id
+          let records = res.data;
+          let imageFileIds = [];
+          for (let item of records) {
+            for (let picture of item.pictures) {
+              imageFileIds.push(picture);
+            }
           }
-        })
-
-      },
-      fail: e => {
-        console.error(e)
-      }
-    })
-  },
-
-})
+          // 图片地址查询
+          wx.cloud.getTempFileURL({
+            fileList: imageFileIds,
+            success: fileListRes => {
+              let fileList = fileListRes.fileList;
+              console.log(`fileList: ${JSON.stringify(fileList)}`);
+              console.log(
+                `before processed records: ${JSON.stringify(records)}}`
+              );
+              // 替换fileId为临时链接
+              for (let item of records) {
+                let newPictures = [];
+                for (let picture of item.pictures) {
+                  newPictures.push(getTempFileURLByFileId(fileList, picture));
+                }
+                item.pictures = newPictures;
+              }
+              console.log(
+                `after processed records: ${JSON.stringify(records)}`
+              );
+              this.setData({
+                records: records
+              });
+              console.log(`this.data: ${JSON.stringify(this.data)}`);
+            },
+            fail: console.error
+          });
+        },
+        fail: err => {
+          wx.showToast({
+            icon: 'none',
+            title: '查询记录失败'
+          });
+          console.error(
+            `database query error: ${JSON.stringify(err, null, 2)}`
+          );
+        }
+      });
+  }
+});
