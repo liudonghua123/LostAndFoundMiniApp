@@ -18,11 +18,11 @@
   border: 1rpx solid grey;
   margin-right: 10rpx;
   border-radius: 10rpx;
-  font-size: 0.75rem;
   padding: 0 6rpx;
 }
 
 .searchbar > button {
   height: 80rpx;
-  /* font-size: 0.75rem; */
+  display: inline-flex;
+  align-items: center;
 }
