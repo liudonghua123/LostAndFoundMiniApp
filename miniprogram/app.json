@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/profile/profile",
     "pages/index/index",
     "pages/item-viewer/item-viewer",
     "pages/userConsole/userConsole",
@@ -18,5 +19,23 @@
   },
   "usingComponents": {
     "item-list-view": "components/item-list-view/item-list-view"
+  },
+  "tabBar": {
+    "color": "#707070",
+    "selectedColor": "#1afa29",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "失物招领信息",
+        "iconPath": "images/icon_service.png",
+        "selectedIconPath": "images/icon_service_fill.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "images/icon_signal.png",
+        "selectedIconPath": "images/icon_signal_fill.png"
+      }
+    ]
   }
 }

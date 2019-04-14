@@ -1,0 +1,15 @@
+<view class="container">
+  <!-- 用户 openid -->
+  <view class="userinfo">
+    <button class="userinfo-avatar" open-type="getUserInfo" bindtap="onGetUserInfo" style="background-image: url({{avatarUrl}})"></button>
+    <view>
+      <text class="userinfo-nickname">{{userInfo.nickName}}</text>
+    </view>
+  </view>
+  <view class="card" hover-class="card-hover">
+    <text class="title">我的失物信息</text>
+  </view>
+  <view class="card" hover-class="card-hover">
+    <text class="title">我的招领信息</text>
+  </view>
+</view>
