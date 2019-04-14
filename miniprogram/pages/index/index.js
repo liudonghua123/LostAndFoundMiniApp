@@ -1,5 +1,7 @@
 //index.js
 const app = getApp();
+const util = require('../../utils/util');
+// const getTempFileURLPromisified = util.wxPromisify(wx.cloud.getTempFileURL);
 
 Page({
   data: {
@@ -31,7 +33,7 @@ Page({
     ]
   },
 
-  onLoad: function() {
+  async onLoad() {
     let getTempFileURLByFileId = (fileList, fileId) => {
       for (let item of fileList) {
         if (item.fileID == fileId) {
@@ -40,60 +42,58 @@ Page({
       }
       return '';
     };
-    const db = wx.cloud.database();
-    // 查询当前用户所有的 counters
-    db.collection('data')
-      .where({})
-      .get({
-        success: res => {
-          console.log(
-            `database query successful: ${JSON.stringify(res.data, null, 2)}`
-          );
-          // 组合所有图片id
-          let records = res.data;
-          let imageFileIds = [];
-          for (let item of records) {
-            for (let picture of item.pictures) {
-              imageFileIds.push(picture);
-            }
-          }
-          // 图片地址查询
-          wx.cloud.getTempFileURL({
-            fileList: imageFileIds,
-            success: fileListRes => {
-              let fileList = fileListRes.fileList;
-              console.log(`fileList: ${JSON.stringify(fileList)}`);
-              console.log(
-                `before processed records: ${JSON.stringify(records)}}`
-              );
-              // 替换fileId为临时链接
-              for (let item of records) {
-                let newPictures = [];
-                for (let picture of item.pictures) {
-                  newPictures.push(getTempFileURLByFileId(fileList, picture));
-                }
-                item.pictures = newPictures;
-              }
-              console.log(
-                `after processed records: ${JSON.stringify(records)}`
-              );
-              this.setData({
-                records: records
-              });
-              console.log(`this.data: ${JSON.stringify(this.data)}`);
-            },
-            fail: console.error
-          });
-        },
-        fail: err => {
-          wx.showToast({
-            icon: 'none',
-            title: '查询记录失败'
-          });
-          console.error(
-            `database query error: ${JSON.stringify(err, null, 2)}`
-          );
+
+    try {
+      const databaseQueryRes = await wx.cloud
+        .database()
+        .collection('data')
+        .where({})
+        .get({});
+      console.log(
+        `database query successful: ${JSON.stringify(
+          databaseQueryRes.data,
+          null,
+          2
+        )}`
+      );
+      // 组合所有图片fileId，方便一次性获取临时链接
+      let { data: records } = databaseQueryRes;
+      let imageFileIds = [];
+      for (let item of records) {
+        for (let picture of item.pictures) {
+          imageFileIds.push(picture);
         }
+      }
+      try {
+        // 图片地址查询
+        const fileListRes = await wx.cloud.getTempFileURL({
+          fileList: imageFileIds
+        });
+        let { fileList } = fileListRes;
+        console.log(`fileList: ${JSON.stringify(fileList)}`);
+        console.log(`before processed records: ${JSON.stringify(records)}}`);
+        // 替换fileId为临时链接
+        for (let item of records) {
+          let newPictures = [];
+          for (let picture of item.pictures) {
+            newPictures.push(getTempFileURLByFileId(fileList, picture));
+          }
+          item.pictures = newPictures;
+        }
+        console.log(`after processed records: ${JSON.stringify(records)}`);
+        this.setData({
+          records
+        });
+        console.log(`this.data: ${JSON.stringify(this.data)}`);
+      } catch (error) {
+        console.error(`getTempFileURL failed with ${error}`);
+      }
+    } catch (err) {
+      wx.showToast({
+        icon: 'none',
+        title: '查询记录失败'
       });
+      console.error(`database query error: ${JSON.stringify(err, null, 2)}`);
+    }
   }
 });
